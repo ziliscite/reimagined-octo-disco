@@ -37,6 +37,7 @@ class PushNotificationService: FirebaseMessagingService() {
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val channelId = "YOUR_CHANNEL_ID"
 
+        // Create notification channel for Android 8.0+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 channelId,
@@ -46,13 +47,11 @@ class PushNotificationService: FirebaseMessagingService() {
             notificationManager.createNotificationChannel(channel)
         }
 
-        // Use a unique ID for each notification, based on the current timestamp
-        val notificationId = System.currentTimeMillis().toInt()
-
-        val intent = Intent(this, MainActivity::class.java).apply {
-            putExtra("notification_body", body)
-            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        }
+        // Create the intent that will open when the notification is tapped
+        // Pass the body as an extra in the Intent
+        val intent = Intent(this, MainActivity::class.java)
+        intent.putExtra("notification_body", body) // Add the body as an extra
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
         val pendingIntent = PendingIntent.getActivity(
             this,
             0,
@@ -60,13 +59,15 @@ class PushNotificationService: FirebaseMessagingService() {
             PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        // Build the notification
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
             .setContentTitle(title)
             .setContentText(body)
-            .setSmallIcon(R.drawable.baseline_notifications_active_24)
+            .setSmallIcon(R.drawable.baseline_notifications_active_24) // Replace with your app's notification icon
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
 
-        notificationManager.notify(notificationId, notificationBuilder.build())
+        // Show the notification
+        notificationManager.notify(0, notificationBuilder.build())
     }
 }
