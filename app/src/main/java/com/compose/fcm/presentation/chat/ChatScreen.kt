@@ -19,11 +19,14 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.compose.fcm.data.dto.SummaryResponse
 import com.compose.fcm.repository.SummaryResult
+import kotlinx.coroutines.launch
 
 @Composable
 fun SummaryScreen(
@@ -33,10 +36,17 @@ fun SummaryScreen(
     onLinkChange: (String) -> Unit,
     onLinkSend: () -> Unit
 ) {
+    val scope = rememberCoroutineScope()
+    val scrollState = rememberScrollState()
+
+    LaunchedEffect(summary) { scope.launch {
+        scrollState.animateScrollTo(0)
+    }}
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .verticalScroll(rememberScrollState()),
+            .verticalScroll(scrollState),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
