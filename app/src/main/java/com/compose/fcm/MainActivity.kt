@@ -8,15 +8,19 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import com.compose.fcm.presentation.chat.ChatScreen
 import com.compose.fcm.presentation.chat.ChatViewModel
-import com.compose.fcm.presentation.chat.EnterTokenDialog
+import com.compose.fcm.presentation.chat.SummaryScreen
 import com.compose.fcm.ui.theme.PushnotificationTheme
 
 class MainActivity : ComponentActivity() {
@@ -27,29 +31,26 @@ class MainActivity : ComponentActivity() {
         requestNotificationPermission()
         setContent {
             PushnotificationTheme {
-                Surface(
-                    color = MaterialTheme.colorScheme.background,
+                Scaffold(
                     modifier = Modifier.fillMaxSize()
-                ) {
-                    val state = viewModel.state
-                    if (state.isEnteringToken) {
-                        EnterTokenDialog(
-                            state.token,
-                            viewModel::onRemoteTokenChange,
-                            viewModel::onSubmitRemoteToken
-                        )
-                    } else {
-                        ChatScreen(
-                            messageText = state.message,
-                            onMessageSend = {
-                                viewModel.sendMessage(isBroadcast = false)
+                ) { inset ->
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(inset),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
+                        val state = viewModel.state
+                        SummaryScreen(
+                            linkText = state.link,
+                            summary = state.summary,
+                            previousSummary = state.previousSummary,
+                            onLinkSend = {
+                                viewModel.sendLink()
                             },
-                            onMessageBroadcast = {
-                                viewModel.sendMessage(isBroadcast = true)
+                            onLinkChange = {
+                                viewModel.onLinkChange(it)
                             },
-                            onMessageChange = {
-                                viewModel.onMessageChange(it)
-                            }
                         )
                     }
                 }

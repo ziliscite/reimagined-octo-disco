@@ -6,10 +6,17 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.compose.fcm.data.dto.NotificationBody
+import com.compose.fcm.data.dto.SendLink
 import com.compose.fcm.data.dto.SendMessage
-import com.compose.fcm.data.remote.FcmApi
+import com.compose.fcm.data.dto.SummaryResponse
+import com.compose.fcm.data.remote.YTSumApi
+import com.compose.fcm.repository.SummaryRepository
+import com.compose.fcm.repository.SummaryResult
 import com.google.firebase.Firebase
 import com.google.firebase.messaging.messaging
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import okhttp3.OkHttpClient
@@ -22,62 +29,34 @@ class ChatViewModel: ViewModel() {
     var state by mutableStateOf(ChatState())
         private set
 
-    private val loggingInterceptor = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.BODY
-    }
-
-    private val client = OkHttpClient.Builder()
-        .addInterceptor(loggingInterceptor)
-        .build()
-
-
-    private val api: FcmApi = Retrofit.Builder()
-        .client(client)
-        .baseUrl("http://192.168.244.33:8085/")
-        .addConverterFactory(MoshiConverterFactory.create())
-        .build()
-        .create()
-
     init { viewModelScope.launch {
-        // Subscribe to topic
-        // This is to receive messages from broadcast on firebase
-        //
-        // Firebase send notification to a topic, if we are subscribed, it will receive it
-        Firebase.messaging.subscribeToTopic("broadcast").await()
+        // Read token of current device
+        state = state.copy(token = Firebase.messaging.token.await())
     }}
 
-    // Read token of other device
-    fun onRemoteTokenChange(newToken: String) {
-        state = state.copy(token = newToken)
+    private val summaryRepository = SummaryRepository()
+
+    fun onLinkChange(link: String) {
+        state = state.copy(link = link)
     }
 
-    fun onSubmitRemoteToken() {
-        state = state.copy(isEnteringToken = false)
-    }
+    fun sendLink() {
+        if (state.link.isNotEmpty()) {
+            getSummary().onEach { result ->
+                state = state.copy(summary = result, link = "")
+            }.launchIn(viewModelScope)
 
-    fun onMessageChange(message: String) {
-        state = state.copy(message = message)
-    }
-
-    fun sendMessage(isBroadcast: Boolean) { viewModelScope.launch {
-        val message = SendMessage(
-            to = if(isBroadcast) null else state.token,
-            notification = NotificationBody(
-                title = "New Message",
-                body = state.message
-            )
-        )
-
-        try {
-            if (isBroadcast) {
-                api.broadcast(message)
-            } else {
-                api.sendMessage(message)
+            when (val previousSummary = state.summary) {
+                is SummaryResult.Success -> {
+                    state = state.copy(previousSummary = previousSummary.data)
+                }
+                is SummaryResult.Failed -> { }
+                SummaryResult.Loading -> { }
             }
-
-            state = state.copy(message = "")
-        } catch (e: Exception) {
-            e.printStackTrace()
         }
-    }}
+    }
+
+    private fun getSummary(): Flow<SummaryResult<SummaryResponse>> {
+        return summaryRepository.sendLink(state.token, state.link)
+    }
 }
