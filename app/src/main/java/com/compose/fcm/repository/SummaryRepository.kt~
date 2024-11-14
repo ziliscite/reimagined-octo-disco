@@ -1,6 +1,6 @@
 package com.compose.fcm.repository
 
-import java.util.concurrent.TimeUnit.SECONDS
+import android.util.Log
 import com.compose.fcm.data.dto.SendLink
 import com.compose.fcm.data.dto.SummaryResponse
 import com.compose.fcm.data.remote.YTSumApi
@@ -25,7 +25,6 @@ class SummaryRepository{
 
     private val client = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
-        .callTimeout(60, SECONDS)
         .build()
 
     private val youtubeApi: YTSumApi = Retrofit.Builder()

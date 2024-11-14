@@ -50,7 +50,16 @@ fun SummaryScreen(
     ) {
         when(state.summary) {
             is SummaryResult.Loading -> {
-
+                Row(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    state.previousSummary?.let {
+                        Text(it.response)
+                    }
+                }
             }
             is SummaryResult.Success -> {
                 Row(

@@ -22,9 +22,11 @@ class ChatViewModel: ViewModel() {
     private val _state = MutableStateFlow(ChatState(summary = SummaryResult.Loading))
     val state: StateFlow<ChatState> get() = _state
 
-    init { viewModelScope.launch {
-        _state.value = state.value.copy(token = Firebase.messaging.token.await())
-    }}
+    init {
+        viewModelScope.launch {
+            _state.value = state.value.copy(token = Firebase.messaging.token.await())
+        }
+    }
 
     private val summaryRepository = SummaryRepository()
 

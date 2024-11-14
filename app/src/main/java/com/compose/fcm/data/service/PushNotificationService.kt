@@ -11,13 +11,14 @@ import com.compose.fcm.MainActivity
 import com.compose.fcm.R
 import com.google.firebase.messaging.FirebaseMessagingService
 import  com.google.firebase.messaging.RemoteMessage
+import java.util.UUID
 
+// Authenticate with refresh token
+// To send push notification upon a longer period of time to a specific user
+// We need the reference to the current token of the user
+// When get token from firebase through auth, we take the token and push it to the server
+// And save it in the database for that user
 class PushNotificationService: FirebaseMessagingService() {
-    // Authenticate with refresh token
-    // To send push notification upon a longer period of time to a specific user
-    // We need the reference to the current token of the user
-    // When get token from firebase through auth, we take the token and push it to the server
-    // And save it in the database for that user
     override fun onNewToken(token: String) {
         super.onNewToken(token)
 
@@ -37,7 +38,6 @@ class PushNotificationService: FirebaseMessagingService() {
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val channelId = "YOUR_CHANNEL_ID"
 
-        // Create notification channel for Android 8.0+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 channelId,
@@ -47,21 +47,29 @@ class PushNotificationService: FirebaseMessagingService() {
             notificationManager.createNotificationChannel(channel)
         }
 
-        // Create the intent that will open when the notification is tapped
-        val intent = Intent(this, MainActivity::class.java) // Replace with your main activity
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        val pendingIntent = PendingIntent.getActivity(this, 0, intent,
-            PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE)
+        // Use a unique ID for each notification, based on the current timestamp
+        val myUuid = UUID.randomUUID()
+        val notificationId = myUuid.toString().toInt()
 
-        // Build the notification
+        val intent = Intent(this, MainActivity::class.java).apply {
+            putExtra("notification_body", body)
+            addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP)
+        }
+
+        val pendingIntent = PendingIntent.getActivity(
+            this,
+            0,
+            intent,
+            PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
+        )
+
         val notificationBuilder = NotificationCompat.Builder(this, channelId)
             .setContentTitle(title)
             .setContentText(body)
-            .setSmallIcon(R.drawable.baseline_notifications_active_24) // Replace with your app's notification icon
+            .setSmallIcon(R.drawable.baseline_notifications_active_24)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
 
-        // Show the notification
-        notificationManager.notify(0, notificationBuilder.build())
+        notificationManager.notify(notificationId, notificationBuilder.build())
     }
 }

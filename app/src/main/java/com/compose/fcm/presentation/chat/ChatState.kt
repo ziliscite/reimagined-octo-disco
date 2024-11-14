@@ -6,6 +6,5 @@ import com.compose.fcm.repository.SummaryResult
 data class ChatState(
     val token: String = "",
     val link: String = "",
-    val summary: SummaryResult<SummaryResponse> = SummaryResult.Loading,
-    val previousSummary: SummaryResponse? = null
+    val summary: SummaryResult<SummaryResponse>
 )
