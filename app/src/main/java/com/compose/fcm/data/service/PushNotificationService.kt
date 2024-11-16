@@ -47,9 +47,8 @@ class PushNotificationService: FirebaseMessagingService() {
             notificationManager.createNotificationChannel(channel)
         }
 
-        // Use a unique ID for each notification, based on the current timestamp
-        val myUuid = UUID.randomUUID()
-        val notificationId = myUuid.toString().toInt()
+        // Use the current timestamp as the unique notification ID
+        val notificationId = System.currentTimeMillis().toInt()
 
         val intent = Intent(this, MainActivity::class.java).apply {
             putExtra("notification_body", body)

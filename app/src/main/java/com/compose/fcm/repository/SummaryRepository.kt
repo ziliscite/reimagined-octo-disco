@@ -25,15 +25,19 @@ class SummaryRepository{
 
     private val client = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
-        .callTimeout(60, SECONDS)
+        .readTimeout(180, SECONDS)
+        .writeTimeout(180, SECONDS)
+        .callTimeout(180, SECONDS)
         .build()
 
-    private val youtubeApi: YTSumApi = Retrofit.Builder()
-        .baseUrl("http://192.168.244.33:8085/")
-        .client(client)
-        .addConverterFactory(MoshiConverterFactory.create())
-        .build()
-        .create()
+    private val youtubeApi: YTSumApi by lazy {
+        Retrofit.Builder()
+            .baseUrl("http://192.168.105.33:8085/")
+            .client(client)
+            .addConverterFactory(MoshiConverterFactory.create())
+            .build()
+            .create()
+    }
 
     fun sendLink(to: String?, link: String): Flow<SummaryResult<SummaryResponse>> = flow {
         val sendLink = SendLink(to, link)
