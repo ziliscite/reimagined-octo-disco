@@ -61,9 +61,12 @@ class AuthViewModel: ViewModel() {
             is AuthAction.OnToggleIsRegister -> {
                 state.value = state.value.copy(
                     isRegister = !state.value.isRegister,
+                    username = "",
                     email = "",
                     password = "",
-                    confirmedPassword = ""
+                    confirmedPassword = "",
+                    passwordVisibility = false,
+                    confirmedPasswordVisibility = false
                 )
             }
         }
