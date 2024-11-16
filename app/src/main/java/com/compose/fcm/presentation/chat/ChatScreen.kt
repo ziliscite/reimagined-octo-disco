@@ -9,16 +9,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Send
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -34,7 +33,8 @@ import kotlinx.coroutines.launch
 fun SummaryScreen(
     state: ChatState,
     onLinkChange: (String) -> Unit,
-    onLinkSend: () -> Unit
+    onLinkSend: () -> Unit,
+    onLogOut: () -> Unit
 ) {
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
@@ -81,7 +81,9 @@ fun SummaryScreen(
             }
             null -> { }
         }
+
         Spacer(Modifier.height(16.dp))
+
         OutlinedTextField(
             value = state.link,
             onValueChange = onLinkChange,
@@ -103,11 +105,21 @@ fun SummaryScreen(
                 onClick = onLinkSend
             ) {
                 Icon(
-                    imageVector = Icons.Default.Send,
+                    imageVector = Icons.AutoMirrored.Filled.Send,
                     contentDescription = "Send"
                 )
             }
         }
+
+        Spacer(Modifier.height(16.dp))
+
+        OutlinedButton(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+            onClick = onLogOut
+        ) {
+            Text(text = "Log Out")
+        }
+
         Spacer(Modifier.height(16.dp))
     }
 }

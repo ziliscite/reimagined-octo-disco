@@ -14,6 +14,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.compose.fcm.presentation.auth.AuthAction
+import com.compose.fcm.presentation.auth.AuthScreen
 import com.compose.fcm.presentation.auth.LoginScreen
 import com.compose.fcm.presentation.auth.AuthViewModel
 import com.compose.fcm.presentation.chat.ChatViewModel
@@ -46,14 +48,16 @@ fun NavigationRoot(
 
             if (viewModel.sideEffect != null) {
                 Toast.makeText(LocalContext.current, viewModel.sideEffect, Toast.LENGTH_SHORT).show()
-                viewModel.onEvent(DetailEvent.RemoveSideEffect)
+                viewModel.onAction(AuthAction.RemoveSideEffect)
             }
 
             LaunchedEffect(Unit) {
-                Firebase.auth.currentUser?.let { navigateToLogin(navController) }
+                Firebase.auth.currentUser?.let {
+                    navigateToLogin(navController)
+                }
             }
 
-            LoginScreen(
+            AuthScreen(
                 state = state,
                 onAction = viewModel::onAction,
                 onLoggedIn = {
@@ -62,13 +66,19 @@ fun NavigationRoot(
             )
         }
         composable<LoggedInRoute> {
+            val context = LocalContext.current
             val viewModel = viewModel<ChatViewModel>()
             val state by viewModel.state.collectAsState()
 
-            DisposableEffect(Unit) {
+            LaunchedEffect(Unit) {
                 val notificationBody = activity.intent.getStringExtra("notification_body")
                 viewModel.setSummary(notificationBody)
-                onDispose { }
+            }
+
+            LaunchedEffect(Unit) {
+                Firebase.auth.currentUser?.displayName?.let {
+                    Toast.makeText(context, "Hallo, $it!", Toast.LENGTH_SHORT).show()
+                }
             }
 
             SummaryScreen(
@@ -79,6 +89,10 @@ fun NavigationRoot(
                 onLinkChange = {
                     viewModel.onLinkChange(it)
                 },
+                onLogOut = {
+                    Firebase.auth.signOut()
+                    navController.navigate(LoginRoute)
+                }
             )
         }
     }
