@@ -115,6 +115,21 @@ fun RegisterScreen(
             modifier = Modifier.padding(bottom = 16.dp)
         )
 
+        // Username Input
+        OutlinedTextField(
+            value = state.username ?: "",
+            onValueChange = {
+                onAction(
+                    AuthAction.OnUsernameChange(it)
+                )
+            },
+            label = { Text("Username") },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         // Email Input
         OutlinedTextField(
             value = state.email ?: "",
@@ -170,17 +185,17 @@ fun RegisterScreen(
             singleLine = true,
             trailingIcon = {
                 IconButton(onClick = {
-                    onAction(AuthAction.OnPasswordVisibilityChange)
+                    onAction(AuthAction.OnConfirmedPasswordVisibilityChange)
                 }) {
                     Icon(
-                        painter = if (state.passwordVisibility) painterResource(id = R.drawable.baseline_visibility_24) else painterResource(
+                        painter = if (state.confirmedPasswordVisibility) painterResource(id = R.drawable.baseline_visibility_24) else painterResource(
                             id = R.drawable.baseline_visibility_off_24
                         ),
                         contentDescription = "Toggle Password Visibility"
                     )
                 }
             },
-            visualTransformation = if (state.passwordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
+            visualTransformation = if (state.confirmedPasswordVisibility) VisualTransformation.None else PasswordVisualTransformation(),
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -188,6 +203,11 @@ fun RegisterScreen(
 
         Button(
             onClick = {
+                if (state.username.isNullOrBlank()) {
+                    AuthAction.SideEffect("Please enter your username")
+                    return@Button
+                }
+
                 if (state.email.isNullOrBlank()) {
                     AuthAction.SideEffect("Please enter your email")
                     return@Button
@@ -213,7 +233,7 @@ fun RegisterScreen(
                     return@Button
                 }
 
-                authManager.createAccountWithEmail(state.email, state.password).onEach {
+                authManager.createAccountWithEmail(state.username, state.email, state.password).onEach {
                     onAction(AuthAction.OnAuth(it))
                 }.launchIn(scope)
             },

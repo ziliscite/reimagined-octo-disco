@@ -18,6 +18,7 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import com.google.firebase.Firebase
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.auth.UserProfileChangeRequest
 import com.google.firebase.auth.auth
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
@@ -32,7 +33,7 @@ class AuthenticationManager(
     private val credManager = CredentialManager.create(context)
 
     // Use callback to return values from the listener
-    fun createAccountWithEmail(email: String, password: String): Flow<AuthResponse> = flow {
+    fun createAccountWithEmail(username: String, email: String, password: String): Flow<AuthResponse> = flow {
         emit(AuthResponse.Loading)
         try {
             Log.d("AuthManager", "Creating credential for email: $email")
@@ -40,7 +41,14 @@ class AuthenticationManager(
 
             Log.d("AuthManager", "Firebase creating user with email: $email")
             auth.createUserWithEmailAndPassword(email, password).await()
+
             Log.d("AuthManager", "Account creation successful")
+            auth.currentUser?.updateProfile(
+                UserProfileChangeRequest.Builder()
+                    .setDisplayName(username)
+                    .build()
+            )
+
             emit(AuthResponse.Success)
         } catch (e: CreateCredentialCancellationException) {
             Log.e("AuthManager", "Credential creation cancelled: ${e.message}")

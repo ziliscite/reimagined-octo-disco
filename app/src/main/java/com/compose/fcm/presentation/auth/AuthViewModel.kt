@@ -32,6 +32,9 @@ class AuthViewModel: ViewModel() {
                 }
             }
 
+            is AuthAction.OnUsernameChange -> {
+                state.value = state.value.copy(username = action.username)
+            }
             is AuthAction.OnEmailChange -> {
                 state.value = state.value.copy(email = action.email)
             }
@@ -43,6 +46,9 @@ class AuthViewModel: ViewModel() {
             }
             is AuthAction.OnPasswordVisibilityChange -> {
                state.value = state.value.copy(passwordVisibility = !state.value.passwordVisibility)
+            }
+            is AuthAction.OnConfirmedPasswordVisibilityChange -> {
+                state.value = state.value.copy(confirmedPasswordVisibility = !state.value.confirmedPasswordVisibility)
             }
 
             is AuthAction.SideEffect -> {
